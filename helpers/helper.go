@@ -6,25 +6,25 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/rs/zerolog/log"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
-func GeneratePasswordHash(password []byte) string {
+func GeneratePasswordHash(password []byte) (hashPass string, err error) {
 	// default cost is 10
 	hashedPassword, err := bcrypt.GenerateFromPassword(password, bcrypt.DefaultCost)
 
-	if err != nil {
-		ErrorPanic(err)
+	if err == nil {
+		hashPass = string(hashedPassword)
 	}
-	defer func() {
-		if r := recover(); r != nil {
-			log.Info().Msg("issue with password encryption, the panic gracefully")
-		}
-	}()
 
-	return string(hashedPassword)
+	// defer func() {
+	// 	if r := recover(); r != nil {
+	// 		log.Info().Msg("issue with password encryption, the panic gracefully")
+	// 	}
+	// }()
+
+	return
 }
 
 func PasswordCompare(password []byte, hashedPassword []byte) error {

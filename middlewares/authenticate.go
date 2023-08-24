@@ -1,6 +1,8 @@
 package middlewares
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/mohdahmadansari/golang_gin/helpers"
 	"github.com/mohdahmadansari/golang_gin/models"
@@ -12,6 +14,7 @@ func Authenticate(guard string, db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		requiredToken := c.Request.Header["Authorization"]
+		fmt.Println(requiredToken)
 		if len(requiredToken) == 0 {
 			helpers.ResponseJsonError(c, 403, "Invalid token.")
 			return

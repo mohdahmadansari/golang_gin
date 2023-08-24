@@ -72,7 +72,7 @@ func (ctrl *AdminCtr) Dashboard(c *gin.Context) {
 	Admin := c.MustGet("AdminData").(models.Admin)
 
 	if Admin.Username == "" {
-		helpers.ResponseJsonError(c, 403, "Admin does not exists.")
+		helpers.ResponseJsonError(c, http.StatusBadRequest, "Admin does not exists.")
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"success": 1, "message": "Admin Authenticated for Dashboard landing API.", "Data": Admin})

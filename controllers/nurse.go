@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -33,7 +34,11 @@ func (ctrl *NurseCtrl) Get(c *gin.Context) {
 	results, err := models.GetAllNurses(ctrl.db)
 	// var Admin = c.MustGet("AdminData").(models.Admin)
 	// results, err := models.GetOwnNurses(ctrl.db, int(Admin.ID))
-	if err != nil || len(results) == 0 {
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"success": 1, "message": "No records found."})
+		return
+	}
+	if len(results) == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": 1, "message": "No records found."})
 		return
 	}
@@ -81,8 +86,8 @@ func (ctrl *NurseCtrl) Post(c *gin.Context) {
 
 	var Admin = c.MustGet("AdminData").(models.Admin)
 	t.Admin = Admin
-
 	if err := c.ShouldBindJSON(&t); err != nil {
+		fmt.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"success": 0, "message": err.Error()})
 		return
 	}
@@ -92,7 +97,7 @@ func (ctrl *NurseCtrl) Post(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"success": 0, "message": "Username does not exists."})
 		return
 	}
-	t.Password = helpers.GeneratePasswordHash([]byte(t.Password))
+	t.Password, _ = helpers.GeneratePasswordHash([]byte(t.Password))
 	if err_create := ctrl.db.Create(&t).Error; err_create != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"success": 0, "message": err_create.Error()})
 		return
@@ -113,6 +118,7 @@ func (ctrl *NurseCtrl) Post(c *gin.Context) {
 // @Failure 404 {string} string "404 not found"
 // @Router /admin/nurse/{id} [put]
 func (ctrl *NurseCtrl) Put(c *gin.Context) {
+
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"success": 0, "message": err.Error()})
@@ -123,7 +129,7 @@ func (ctrl *NurseCtrl) Put(c *gin.Context) {
 	updateNurse["id"] = uint(id)
 
 	c.ShouldBindJSON(&updateNurse)
-
+	fmt.Println(updateNurse)
 	// if err := c.ShouldBindJSON(&updateNurse); err != nil {
 	// c.JSON(http.StatusBadRequest, gin.H{"success": 0, "message": err.Error()})
 	// return
@@ -145,7 +151,7 @@ func (ctrl *NurseCtrl) Put(c *gin.Context) {
 	}
 
 	if password, okay := updateNurse["password"]; okay {
-		newPassword := helpers.GeneratePasswordHash([]byte(password.(string)))
+		newPassword, _ := helpers.GeneratePasswordHash([]byte(password.(string)))
 		updateNurse["password"] = newPassword
 	}
 
@@ -271,7 +277,7 @@ func (ctrl *NurseCtrl) UpdateProfile(c *gin.Context) {
 	}
 
 	if password, okay := updateNurse["password"]; okay {
-		newPassword := helpers.GeneratePasswordHash([]byte(password.(string)))
+		newPassword, _ := helpers.GeneratePasswordHash([]byte(password.(string)))
 		updateNurse["password"] = newPassword
 	}
 

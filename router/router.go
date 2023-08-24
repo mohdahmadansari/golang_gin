@@ -3,11 +3,22 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/mohdahmadansari/golang_gin/controllers"
+	"github.com/mohdahmadansari/golang_gin/database"
 	"github.com/mohdahmadansari/golang_gin/middlewares"
-	"gorm.io/gorm"
 )
 
-func AllRouter(r *gin.Engine, db *gorm.DB) *gin.Engine {
+func AllRouter(r *gin.Engine) *gin.Engine {
+
+	var notFoundMessage = "invalid route"
+	connStr, _ := database.GetConnectionString()
+	db, dbError := database.CreateConnection(connStr)
+
+	if dbError != nil {
+		notFoundMessage = "Database connection failed."
+	} else {
+		database.SetupMigration(db)
+		database.SeedDatabase(db)
+	}
 
 	ctr := controllers.NewController(db)
 
@@ -45,5 +56,10 @@ func AllRouter(r *gin.Engine, db *gorm.DB) *gin.Engine {
 		}
 
 	}
+
+	r.NoRoute(func(c *gin.Context) {
+		c.JSON(404, gin.H{"success": "0", "message": notFoundMessage})
+	})
+
 	return r
 }
